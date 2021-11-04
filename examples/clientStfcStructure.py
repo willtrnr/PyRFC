@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from pyrfc import Connection
-
-from pprint import pprint
 import datetime
+from pprint import pprint
+
+from pyrfc import Connection
 
 try:
     from ConfigParser import ConfigParser

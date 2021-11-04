@@ -8,8 +8,8 @@
 
 import datetime
 import unittest
-import pyrfc
 
+import pyrfc
 from tests.config import PARAMS as params, get_error
 
 

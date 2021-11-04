@@ -2,43 +2,32 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import codecs
 import inspect
 import os
-import sys
 import subprocess
-from codecs import open
-from setuptools import setup, find_packages, Extension
+import sys
+
+from Cython.Build import cythonize
+from setuptools import Extension, find_packages, setup
 
 MODULE_NAME = "pyrfc"
 PYPIPACKAGE = "pynwrfc"
+
 HERE = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(HERE, "VERSION"), "rb", "utf-8") as version_file:
+
+with codecs.open(os.path.join(HERE, "VERSION"), "rb", "utf-8") as version_file:
     VERSION = version_file.read().strip()
-with open(os.path.join(HERE, "README.md"), "rb", "utf-8") as readme_file:
+with codecs.open(os.path.join(HERE, "README.md"), "rb", "utf-8") as readme_file:
     LONG_DESCRIPTION = readme_file.read().strip()
-
-CPP = os.path.join(HERE, "src/pyrfc/_pyrfc.cpp")
-BUILD_CYTHON = os.getenv("PYRFC_BUILD_CYTHON", False) or not os.path.isfile(CPP)
-
-if BUILD_CYTHON:
-    try:
-        from Cython.Distutils import build_ext
-        from Cython.Build import cythonize
-    except ImportError:
-        sys.exit("Cython not installed.")
-    SOURCE_EXT = "pyx"
-    CMDCLASS = {"build_ext": build_ext}
-else:
-    SOURCE_EXT = "cpp"
-    CMDCLASS = {}
 
 # Check if SAP NWRFC SDK configured
 SAPNWRFC_HOME = os.environ.get("SAPNWRFC_HOME")
 if not SAPNWRFC_HOME:
     sys.exit(
-        "Environment variable SAPNWRFC_HOME not set.\nPlease specify this variable with the root directory of the SAP NWRFC Library."
+        "Environment variable SAPNWRFC_HOME not set.\n"
+        + "Please specify this variable with the root directory of the SAP NWRFC Library."
     )
-
 
 # https://launchpad.support.sap.com/#/notes/2573953
 if sys.platform.startswith("linux"):
@@ -68,9 +57,9 @@ if sys.platform.startswith("linux"):
         "-fPIC",
         "-pthread",
         "-minline-all-stringops",
-        "-I{}/include".format(SAPNWRFC_HOME),
+        f"-I{SAPNWRFC_HOME}/include",
     ]
-    LINK_ARGS = ["-L{}/lib".format(SAPNWRFC_HOME)]
+    LINK_ARGS = [f"-L{SAPNWRFC_HOME}/lib"]
 elif sys.platform.startswith("win"):
     # https://docs.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically
 
@@ -105,9 +94,9 @@ elif sys.platform.startswith("win"):
     ]
 
     COMPILE_ARGS = [
-        "-I{}\\include".format(SAPNWRFC_HOME),
-        "-I{}\\Include".format(PYTHONSOURCE),
-        "-I{}\\Include\\PC".format(PYTHONSOURCE),
+        f"-I{SAPNWRFC_HOME}\\include",
+        f"-I{PYTHONSOURCE}\\Include",
+        f"-I{PYTHONSOURCE}\\Include\\PC",
         "/EHs",
         "/Gy",
         "/J",
@@ -124,8 +113,8 @@ elif sys.platform.startswith("win"):
     ]
 
     LINK_ARGS = [
-        "-LIBPATH:{}\\lib".format(SAPNWRFC_HOME),
-        "-LIBPATH:{}\\PCbuild".format(PYTHONSOURCE),
+        f"-LIBPATH:{SAPNWRFC_HOME}\\lib",
+        f"-LIBPATH:{PYTHONSOURCE}\\PCbuild",
         "/NXCOMPAT",
         "/STACK:0x2000000",
         "/SWAPRUN:NET",
@@ -164,28 +153,28 @@ elif sys.platform.startswith("darwin"):
         "-minline-all-stringops",
         "-isystem",
         "-std=c++11",
-        "-mmacosx-version-min={}".format(MACOS_VERSION_MIN),
-        "-I{}/include".format(SAPNWRFC_HOME),
+        f"-mmacosx-version-min={MACOS_VERSION_MIN}",
+        f"-I{SAPNWRFC_HOME}/include",
         "-Wno-cast-align",
         "-Wno-deprecated-declarations",
         "-Wno-unused-function",
     ]
     LINK_ARGS = [
-        "-L{}/lib".format(SAPNWRFC_HOME),
+        f"-L{SAPNWRFC_HOME}/lib",
         "-stdlib=libc++",
-        "-mmacosx-version-min={}".format(MACOS_VERSION_MIN),
+        f"-mmacosx-version-min={MACOS_VERSION_MIN}",
         # https://stackoverflow.com/questions/6638500/how-to-specify-rpath-in-a-makefile
-        "-Wl,-rpath,{}/lib".format(SAPNWRFC_HOME),
+        f"-Wl,-rpath,{SAPNWRFC_HOME}/lib",
     ]
 else:
-    sys.exit("Platform not supported: {}.".format(sys.platform))
+    sys.exit(f"Platform not supported: {sys.platform}.")
 
 # https://docs.python.org/2/distutils/apiref.html
 PYRFC_EXT = Extension(
     language="c++",
     # https://stackoverflow.com/questions/8024805/cython-compiled-c-extension-importerror-dynamic-module-does-not-define-init-fu
-    name="%s.%s" % (MODULE_NAME, MODULE_NAME),
-    sources=["src/%s/_%s.%s" % (MODULE_NAME, MODULE_NAME, SOURCE_EXT)],
+    name=f"{MODULE_NAME}.{MODULE_NAME}",
+    sources=[f"src/{MODULE_NAME}/_{MODULE_NAME}.pyx"],
     define_macros=MACROS,
     extra_compile_args=COMPILE_ARGS,
     extra_link_args=LINK_ARGS,
@@ -213,7 +202,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    keywords="%s %s pyrfc sap rfc nwrfc sapnwrfc" % (MODULE_NAME, PYPIPACKAGE),
+    keywords=f"{MODULE_NAME} {PYPIPACKAGE} pyrfc sap rfc nwrfc sapnwrfc",
     author="SAP SE",
     url="https://github.com/SAP/pyrfc",
     license="OSI Approved :: Apache Software License",
@@ -224,11 +213,6 @@ setup(
     # include_package_data=True,
     # http://packages.python.org/distribute/setuptools.html#setting-the-zip-safe-flag
     zip_safe=False,
-    install_requires=["setuptools"],
-    setup_requires=["setuptools-git", "Cython", "Sphinx"],
-    cmdclass=CMDCLASS,
-    ext_modules=cythonize(PYRFC_EXT, annotate=True, language_level="3")
-    if BUILD_CYTHON
-    else [PYRFC_EXT],
+    ext_modules=cythonize(PYRFC_EXT, annotate=True, language_level="3"),
     test_suite=MODULE_NAME,
 )

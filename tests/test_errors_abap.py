@@ -9,10 +9,10 @@
 import datetime
 import socket
 import unittest
-import pyrfc
-
 from decimal import Decimal
-from tests.config import PARAMS as params, CONFIG_SECTIONS as config_sections, get_error
+
+import pyrfc
+from tests.config import CONFIG_SECTIONS as config_sections, PARAMS as params, get_error
 
 
 class TestConnection:

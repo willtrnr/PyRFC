@@ -12,8 +12,8 @@
 # Some of them are used as well.
 
 import unittest
-import pyrfc
 
+import pyrfc
 from tests.config import PARAMS as params, get_error
 
 

@@ -1,0 +1,12 @@
+[tool.black]
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+treat_all_comments_as_code = true
+combine_as_imports = true
+combine_star = true
+
+[build-system]
+requires = ["setuptools", "wheel", "Cython>=0.29.21"]
+build-backend = "setuptools.build_meta"

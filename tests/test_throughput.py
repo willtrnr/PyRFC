@@ -5,13 +5,13 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from pyrfc import *
 
+from pyrfc import *
 from tests.config import (
-    PARAMS as params,
     CONFIG_SECTIONS as config_sections,
-    get_error,
+    PARAMS as params,
     UNICODETEST,
+    get_error,
 )
 
 
@@ -69,13 +69,23 @@ class TestThroughput:
             throughput = Throughput(1)
         except Exception as ex:
             assert type(ex) is TypeError
-            assert ex.args == ("Connection object required, received", 1, "of type", type(1))
+            assert ex.args == (
+                "Connection object required, received",
+                1,
+                "of type",
+                type(1),
+            )
 
         try:
             throughput = Throughput([conn, 1])
         except Exception as ex:
             assert type(ex) is TypeError
-            assert ex.args == ("Connection object required, received", 1, "of type", type(1))
+            assert ex.args == (
+                "Connection object required, received",
+                1,
+                "of type",
+                type(1),
+            )
         conn.close()
 
     def test_get_from_connection(self):

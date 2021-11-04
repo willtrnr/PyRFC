@@ -7,8 +7,8 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import pyrfc
 
+import pyrfc
 from tests.config import PARAMS as params
 
 

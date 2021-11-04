@@ -2,12 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from pyrfc import Server, Connection
-
-from configparser import ConfigParser
 import signal
 import sys
+from configparser import ConfigParser
 
+from pyrfc import Connection, Server
 
 config = ConfigParser()
 config.read("sapnwrfc.cfg")
@@ -39,4 +38,3 @@ server = Server(**params_gateway)
 server.install_function(func_desc_stfc_connection, my_stfc_connection)
 print("--- Server registration and serving ---")
 server.serve(20)
-

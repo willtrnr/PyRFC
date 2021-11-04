@@ -15,26 +15,25 @@ if os.name == "nt":
         pass
 
 from ._exception import (
-    RFCError,
-    RFCLibError,
-    CommunicationError,
-    LogonError,
     ABAPApplicationError,
     ABAPRuntimeError,
-    ExternalAuthorizationError,
+    CommunicationError,
     ExternalApplicationError,
+    ExternalAuthorizationError,
     ExternalRuntimeError,
+    LogonError,
+    RFCError,
+    RFCLibError,
 )
-
 from .pyrfc import (
-    get_nwrfclib_version,
+    __VERSION__,
     Connection,
-    Throughput,
-    TypeDescription,
+    ConnectionParameters,
     FunctionDescription,
     Server,
-    ConnectionParameters,
-    __VERSION__,
+    Throughput,
+    TypeDescription,
+    get_nwrfclib_version,
 )
 
 __author__ = """"Srdjan Boskovic"""

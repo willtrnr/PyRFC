@@ -4,16 +4,19 @@
 
 """ The _pyrfc C-extension module """
 
-import sys
-import signal
-import time
-import datetime
 import collections
+import datetime
 import locale
+import signal
+import sys
+import time
 from decimal import Decimal
+
 from cpython cimport array
-from . csapnwrfc cimport *
-from . _exception import *
+
+from .csapnwrfc cimport *
+
+from ._exception import *
 
 __VERSION__ = "2.1.1"
 

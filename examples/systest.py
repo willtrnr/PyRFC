@@ -19,4 +19,3 @@ for k in "Py_DEBUG", "WITH_PYMALLOC", "Py_UNICODE_SIZE":
         print(k + ": " + repr(conf_vars[k]))
     except:
         print("Error getting %s" % k)
-

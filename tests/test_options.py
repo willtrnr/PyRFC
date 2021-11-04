@@ -9,15 +9,14 @@
 import datetime
 import socket
 import unittest
-import pyrfc
-
 from decimal import Decimal
 
+import pyrfc
 from tests.config import (
-    PARAMS as params,
     CONFIG_SECTIONS as config_sections,
-    get_error,
+    PARAMS as params,
     UNICODETEST,
+    get_error,
 )
 
 
@@ -53,7 +52,9 @@ class TestConnection:
     def test_error_when_all_requested(self):
         PLNTY = "A"
         PLNNR = "00100000"
-        result = self.conn.call("EAM_TASKLIST_GET_DETAIL", IV_PLNTY=PLNTY, IV_PLNNR=PLNNR)
+        result = self.conn.call(
+            "EAM_TASKLIST_GET_DETAIL", IV_PLNTY=PLNTY, IV_PLNNR=PLNNR
+        )
         assert len(result["ET_RETURN"]) == 1
         assert result["ET_RETURN"][0] == {
             "TYPE": "E",
