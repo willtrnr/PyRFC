@@ -1,5 +1,7 @@
+global-include py.typed *.pyi
 recursive-exclude doc *
 recursive-exclude examples *
 recursive-exclude material *
 recursive-exclude tests *
+recursive-exclude venv *
 exclude PyRFC.code-workspace

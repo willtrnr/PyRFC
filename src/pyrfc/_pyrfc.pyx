@@ -15,7 +15,7 @@ from cpython cimport array
 from . csapnwrfc cimport *
 from . _exception import *
 
-__VERSION__ = "2.1.0"
+__VERSION__ = "2.1.1"
 
 # inverts the enumeration of RFC_DIRECTION
 _direction2rfc = {'RFC_IMPORT': RFC_IMPORT, 'RFC_EXPORT': RFC_EXPORT,
@@ -197,6 +197,9 @@ cdef class Connection:
         self._close() # Although the _close() method is also called in the destructor, the
                       # explicit call assures the immediate closing to the connection.
 
+    def is_open(self):
+        return self.alive
+
     def open(self):
         self._open()
 
@@ -205,9 +208,6 @@ cdef class Connection:
 
     def close(self):
         self._close()
-
-    def __bool__(self):
-        return self.alive
 
     cdef _reopen(self):
         self._close()
@@ -230,7 +230,8 @@ cdef class Connection:
         cdef RFC_RC rc
         cdef RFC_ERROR_INFO errorInfo
         if self.alive:
-            rc = RfcCloseConnection(self._handle, &errorInfo)
+            with nogil:
+                rc = RfcCloseConnection(self._handle, &errorInfo)
             self.alive = False
             if rc != RFC_OK:
                 self._error(&errorInfo)
@@ -260,7 +261,8 @@ cdef class Connection:
         """
         cdef RFC_RC rc
         cdef RFC_ERROR_INFO errorInfo
-        rc = RfcPing(self._handle, &errorInfo)
+        with nogil:
+            rc = RfcPing(self._handle, &errorInfo)
         if rc != RFC_OK:
             self._error(&errorInfo)
 
@@ -279,7 +281,8 @@ cdef class Connection:
         cdef RFC_ERROR_INFO errorInfo
         if not self.alive:
             self._open()
-        rc = RfcResetServerContext(self._handle, &errorInfo)
+        with nogil:
+            rc = RfcResetServerContext(self._handle, &errorInfo)
         if rc != RFC_OK:
             self._error(&errorInfo)
 
@@ -351,7 +354,9 @@ cdef class Connection:
         funcName = fillString(func_name.upper())
         if not self.alive:
             self._open()
-        cdef RFC_FUNCTION_DESC_HANDLE funcDesc = RfcGetFunctionDesc(self._handle, funcName, &errorInfo)
+        cdef RFC_FUNCTION_DESC_HANDLE funcDesc
+        with nogil:
+            funcDesc = RfcGetFunctionDesc(self._handle, funcName, &errorInfo)
         free(funcName)
         if not funcDesc:
             self._error(&errorInfo)
@@ -382,52 +387,36 @@ cdef class Connection:
         cdef RFC_ERROR_INFO openErrorInfo
         cdef unsigned paramCount
         cdef SAP_UC *cName
-        if type(func_name) is not str:
-            if type(func_name) is not unicode:
-                raise RFCError("Remote function module name must be unicode string, received:", func_name, type(func_name))
+        if not isinstance(func_name, (str, unicode)):
+            raise RFCError("Remote function module name must be unicode string, received:", func_name, type(func_name))
         cdef SAP_UC *funcName = fillString(func_name)
         if not self.alive:
             raise RFCError("Remote function module %s invocation rejected because the connection is closed" % func_name)
-        cdef RFC_FUNCTION_DESC_HANDLE funcDesc = RfcGetFunctionDesc(self._handle, funcName, &errorInfo)
+        cdef RFC_FUNCTION_DESC_HANDLE funcDesc
+        with nogil:
+            funcDesc = RfcGetFunctionDesc(self._handle, funcName, &errorInfo)
         free(funcName)
         if not funcDesc:
             self._error(&errorInfo)
-        cdef RFC_FUNCTION_HANDLE funcCont = RfcCreateFunction(funcDesc, &errorInfo)
+        cdef RFC_FUNCTION_HANDLE funcCont
+        with nogil:
+            funcCont = RfcCreateFunction(funcDesc, &errorInfo)
         if not funcCont:
             self._error(&errorInfo)
-        cdef int isActive = 0
         try: # now we have a function module
-            if 'not_requested' in options:
-                skip_parameters = options['not_requested']
-                if not isinstance(skip_parameters, list):
-                    skip_parameters = [skip_parameters]
-                for name in skip_parameters:
-                    cName = fillString(name)
-                    rc = RfcSetParameterActive(funcCont, cName, isActive, &errorInfo)
-                    free(cName)
-                    if rc != RFC_OK:
-                        self._error(&errorInfo)
             for name, value in params.iteritems():
                 fillFunctionParameter(funcDesc, funcCont, name, value)
             with nogil:
                 rc = RfcInvoke(self._handle, funcCont, &errorInfo)
             if rc != RFC_OK:
-                if (errorInfo.group in (ABAP_RUNTIME_FAILURE, LOGON_FAILURE, COMMUNICATION_FAILURE, EXTERNAL_RUNTIME_FAILURE)):
-                # error groups seen to be more robust here
-                # if (errorInfo.code in(RFC_COMMUNICATION_FAILURE, RFC_ABAP_RUNTIME_FAILURE, RFC_ABAP_MESSAGE, RFC_EXTERNAL_FAILURE):
-                    # Connection closed, reopen
-                    self._handle = RfcOpenConnection(self.connectionParams, self.paramCount, &openErrorInfo)
-                    self.alive = (openErrorInfo.code == RFC_OK)
-                    if not self.alive:
-                        # Communication error returned as error
-                        errorInfo = openErrorInfo
                 self._error(&errorInfo)
             if self.__bconfig & _MASK_RETURN_IMPORT_PARAMS:
                 return wrapResult(funcDesc, funcCont, <RFC_DIRECTION> 0, self.__bconfig)
             else:
                 return wrapResult(funcDesc, funcCont, RFC_IMPORT, self.__bconfig)
         finally:
-            RfcDestroyFunction(funcCont, NULL)
+            with nogil:
+                RfcDestroyFunction(funcCont, NULL)
 
     ##########################################################################
     ## HELPER METHODS
@@ -441,9 +430,11 @@ cdef class Connection:
         """
         cdef RFC_ERROR_INFO errorInfo
         typeName = fillString(type_name.upper())
-        cdef RFC_TYPE_DESC_HANDLE typeDesc = RfcGetTypeDesc(self._handle, typeName, &errorInfo)
+        cdef RFC_TYPE_DESC_HANDLE typeDesc
+        with nogil:
+            typeDesc = RfcGetTypeDesc(self._handle, typeName, &errorInfo)
         free(typeName)
-        if typeDesc == NULL:
+        if not typeDesc:
             self._error(&errorInfo)
         return wrapTypeDescription(typeDesc)
 
@@ -2409,7 +2400,7 @@ cdef class Throughput:
     _registry = []
 
     cdef RFC_THROUGHPUT_HANDLE _throughput_handle
-    cpdef _connections
+    cdef _connections
 
     def __init__(self, connections = []):
         cdef RFC_ERROR_INFO errorInfo

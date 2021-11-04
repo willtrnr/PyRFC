@@ -210,18 +210,18 @@ cdef extern from "sapnwrfc.h":
         RFC_UNIT_ROLLED_BACK
         RFC_UNIT_CONFIRMED
 
-    RFC_RC RfcIsConnectionHandleValid (RFC_CONNECTION_HANDLE rfcHandle, RFC_INT * isValid, RFC_ERROR_INFO * errorInfo)	nogil
+    RFC_RC RfcIsConnectionHandleValid(RFC_CONNECTION_HANDLE rfcHandle, RFC_INT * isValid, RFC_ERROR_INFO * errorInfo)	nogil
     RFC_CONNECTION_HANDLE RfcOpenConnection(RFC_CONNECTION_PARAMETER* connectionParams, unsigned paramCount, RFC_ERROR_INFO* errorInfo) nogil
     RFC_CONNECTION_HANDLE RfcRegisterServer(RFC_CONNECTION_PARAMETER* connectionParams, unsigned paramCount, RFC_ERROR_INFO* errorInfo) nogil
-    RFC_RC RfcCloseConnection(RFC_CONNECTION_HANDLE rfcHandle, RFC_ERROR_INFO* errorInfo)
-    RFC_RC RfcResetServerContext(RFC_CONNECTION_HANDLE rfcHandle, RFC_ERROR_INFO* errorInfo)
-    RFC_RC RfcPing(RFC_CONNECTION_HANDLE rfcHandle, RFC_ERROR_INFO* errorInfo)
-    RFC_RC RfcListenAndDispatch (RFC_CONNECTION_HANDLE rfcHandle, int timeout, RFC_ERROR_INFO* errorInfo)
-    RFC_FUNCTION_DESC_HANDLE RfcGetFunctionDesc(RFC_CONNECTION_HANDLE rfcHandle, SAP_UC* funcName, RFC_ERROR_INFO* errorInfo)
-    RFC_FUNCTION_HANDLE RfcCreateFunction(RFC_FUNCTION_DESC_HANDLE funcDescHandle, RFC_ERROR_INFO* errorInfo)
-    RFC_RC RfcDestroyFunction(RFC_FUNCTION_HANDLE funcHandle, RFC_ERROR_INFO* errorInfo)
+    RFC_RC RfcCloseConnection(RFC_CONNECTION_HANDLE rfcHandle, RFC_ERROR_INFO* errorInfo) nogil
+    RFC_RC RfcResetServerContext(RFC_CONNECTION_HANDLE rfcHandle, RFC_ERROR_INFO* errorInfo) nogil
+    RFC_RC RfcPing(RFC_CONNECTION_HANDLE rfcHandle, RFC_ERROR_INFO* errorInfo) nogil
+    RFC_RC RfcListenAndDispatch(RFC_CONNECTION_HANDLE rfcHandle, int timeout, RFC_ERROR_INFO* errorInfo) nogil
+    RFC_FUNCTION_DESC_HANDLE RfcGetFunctionDesc(RFC_CONNECTION_HANDLE rfcHandle, SAP_UC* funcName, RFC_ERROR_INFO* errorInfo) nogil
+    RFC_FUNCTION_HANDLE RfcCreateFunction(RFC_FUNCTION_DESC_HANDLE funcDescHandle, RFC_ERROR_INFO* errorInfo) nogil
+    RFC_RC RfcDestroyFunction(RFC_FUNCTION_HANDLE funcHandle, RFC_ERROR_INFO* errorInfo) nogil
     RFC_RC RfcInvoke(RFC_CONNECTION_HANDLE rfcHandle, RFC_FUNCTION_HANDLE funcHandle, RFC_ERROR_INFO* errorInfo) nogil
-    RFC_RC RfcSetParameterActive(RFC_FUNCTION_HANDLE funcHandle, SAP_UC *paramName, int isActive, RFC_ERROR_INFO* errorInfo)
+    RFC_RC RfcSetParameterActive(RFC_FUNCTION_HANDLE funcHandle, SAP_UC *paramName, int isActive, RFC_ERROR_INFO* errorInfo) nogil
 
     SAP_UC* RfcGetVersion(unsigned* majorVersion, unsigned* minorVersion, unsigned* patchLevel)
 
@@ -266,7 +266,7 @@ cdef extern from "sapnwrfc.h":
     RFC_RC RfcGetFieldDescByName(RFC_TYPE_DESC_HANDLE typeHandle, SAP_UC* name, RFC_FIELD_DESC* fieldDescr, RFC_ERROR_INFO* errorInfo)
     RFC_RC RfcGetTypeLength(RFC_TYPE_DESC_HANDLE typeHandle, unsigned* nucByteLength, unsigned* ucByteLength, RFC_ERROR_INFO* errorInfo)
     RFC_RC RfcDestroyTypeDesc(RFC_TYPE_DESC_HANDLE typeHandle, RFC_ERROR_INFO *errorInfo)
-    RFC_TYPE_DESC_HANDLE RfcGetTypeDesc(RFC_CONNECTION_HANDLE rfcHandle, SAP_UC* typeName, RFC_ERROR_INFO* errorInfo);
+    RFC_TYPE_DESC_HANDLE RfcGetTypeDesc(RFC_CONNECTION_HANDLE rfcHandle, SAP_UC* typeName, RFC_ERROR_INFO* errorInfo) nogil
     RFC_RC RfcRemoveTypeDesc(SAP_UC* repositoryID, SAP_UC* typeName, RFC_ERROR_INFO* errorInfo);
     RFC_RC RfcMetadataBatchQuery(
         RFC_CONNECTION_HANDLE rfcHandle,
